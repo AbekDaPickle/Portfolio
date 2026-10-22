@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>abekdapickle | Minecraft Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #040711;
+      --glass-bg: rgba(255, 255, 255, 0.035);
+      --glass-bg-hover: rgba(255, 255, 255, 0.065);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --accent-emerald: #10b981;
+      --accent-cyan: #06b6d4;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    /* Fixed Canvas for Starry Night & Auroras */
+    #night-sky-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .vignette {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at 50% 25%, transparent 45%, rgba(3, 7, 18, 0.78) 90%),
+                  linear-gradient(to bottom, rgba(4, 7, 17, 0.15), rgba(4, 7, 17, 0.85) 85%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 2;
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 1.5rem 5rem;
+    }
+
+    /* Liquid Glass Box */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), 
+                  box-shadow 0.22s cubic-bezier(0.2, 0, 0, 1), 
+                  border-color 0.22s ease,
+                  background 0.22s ease;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35),
+                  inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        500px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+        rgba(56, 189, 248, 0.12),
+        rgba(16, 185, 129, 0.05) 40%,
+        transparent 70%
+      );
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .glass-card:hover::before {
+      opacity: 1;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(94, 234, 212, 0.35);
+      box-shadow: 0 12px 35px -8px rgba(16, 185, 129, 0.22),
+                  0 0 18px 2px rgba(6, 182, 212, 0.12),
+                  inset 0 1px 2px rgba(255, 255, 255, 0.2);
+      background: var(--glass-bg-hover);
+    }
+
+    .glass-card > * {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Header Nav */
+    header {
+      padding: 1.75rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+
+    .brand-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.15rem;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .brand-text h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-text span {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: block;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .btn-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-main);
+      padding: 0.5rem 1.05rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+    }
+
+    .btn-pill:hover {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(94, 234, 212, 0.4);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.85), rgba(6, 182, 212, 0.85));
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+    }
+
+    /* Hero Section */
+    .hero-section {
+      padding: 2.75rem 2.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #34d399;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-badge .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 10px #34d399; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    .hero-title {
+      font-size: 2.85rem;
+      font-weight: 800;
+      line-height: 1.18;
+      letter-spacing: -0.025em;
+      margin-bottom: 1rem;
+      color: #ffffff;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, #34d399 30%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.1rem;
+      color: #cbd5e1;
+      max-width: 820px;
+      margin-bottom: 1.85rem;
+      line-height: 1.65;
+    }
+
+    .info-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .pill-item {
+      padding: 0.5rem 0.95rem;
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .pill-item svg {
+      color: #38bdf8;
+    }
+
+    .pill-item strong {
+      color: #34d399;
+      font-weight: 600;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+      padding: 1.4rem;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #34d399, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.2rem;
+    }
+
+    .stat-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    /* Section Titles */
+    .section-header {
+      margin-bottom: 1.35rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+    }
+
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      border-radius: 4px;
+      background: linear-gradient(to bottom, #10b981, #06b6d4);
+      display: inline-block;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Skills Grid - 4 Columns */
+    .competencies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 3.25rem;
+    }
+
+    .comp-card {
+      padding: 1.75rem;
+    }
+
+    .comp-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .comp-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .comp-list li {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      line-height: 1.5;
+    }
+
+    .comp-list li::before {
+      content: '•';
+      color: #38bdf8;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+
+    .filter-btn {
+      padding: 0.45rem 0.95rem;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+    }
+
+    .filter-btn.active {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: rgba(16, 185, 129, 0.45);
+      color: #34d399;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);
+    }
+
+    .search-box {
+      margin-left: auto;
+      position: relative;
+      min-width: 230px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 9px;
+      padding: 0.45rem 0.95rem 0.45rem 2.15rem;
+      color: #fff;
+      font-size: 0.84rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-box input:focus {
+      border-color: #38bdf8;
+      background: rgba(255, 255, 255, 0.07);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+
+    /* Experience Grid */
+    .experience-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 1.15rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .server-card {
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 165px;
+    }
+
+    .server-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.65rem;
+    }
+
+    .server-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: -0.01em;
+    }
+
+    .role-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.22rem 0.55rem;
+      border-radius: 6px;
+      letter-spacing: 0.03em;
+    }
+
+    .badge-owner {
+      background: rgba(236, 72, 153, 0.16);
+      border: 1px solid rgba(236, 72, 153, 0.35);
+      color: #f472b6;
+    }
+
+    .badge-coowner {
+      background: rgba(168, 85, 247, 0.16);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      color: #c084fc;
+    }
+
+    .badge-manager {
+      background: rgba(56, 189, 248, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #38bdf8;
+    }
+
+    .badge-sradmin {
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fbbf24;
+    }
+
+    .badge-dev {
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+
+    .badge-builder {
+      background: rgba(20, 184, 166, 0.16);
+      border: 1px solid rgba(20, 184, 166, 0.35);
+      color: #2dd4bf;
+    }
+
+    .badge-staff {
+      background: rgba(148, 163, 184, 0.16);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      color: #cbd5e1;
+    }
+
+    .server-desc {
+      font-size: 0.86rem;
+      color: #94a3b8;
+      line-height: 1.48;
+      margin-bottom: 0.85rem;
+    }
+
+    .server-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.76rem;
+      color: var(--text-dim);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 0.65rem;
+      margin-top: auto;
+    }
+
+    .category-tag {
+      font-family: 'JetBrains Mono', monospace;
+      color: #64748b;
+    }
+
+    /* Working Style Section */
+    .ethic-card {
+      padding: 2.25rem;
+      margin-bottom: 3.5rem;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(16, 185, 129, 0.04) 100%);
+    }
+
+    .ethic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.35rem;
+      margin-top: 1.35rem;
+    }
+
+    .ethic-item h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 0.4rem;
+    }
+
+    .ethic-item p {
+      font-size: 0.86rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      color: var(--text-muted);
+      font-size: 0.86rem;
+    }
+
+    .footer-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .footer-highlight {
+      color: #34d399;
+      font-weight: 600;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: rgba(13, 20, 38, 0.92);
+      border: 1px solid rgba(94, 234, 212, 0.45);
+      color: #f8fafc;
+      padding: 0.8rem 1.3rem;
+      border-radius: 11px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 18px rgba(16, 185, 129, 0.25);
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      z-index: 999;
+      font-size: 0.88rem;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(15px);
+      transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    #toast.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2.1rem;
+      }
+      .hero-section {
+        padding: 1.85rem 1.35rem;
+      }
+      .search-box {
+        margin-left: 0;
+        width: 100%;
+      }
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Starry Night & Animated Auroras Canvas -->
+  <canvas id="night-sky-canvas"></canvas>
+  <div class="vignette"></div>
+
+  <div class="app-container">
+    <!-- Header Nav -->
+    <header>
+      <a href="#" class="brand">
+        <div class="brand-avatar">A</div>
+        <div class="brand-text">
+          <h1>abekdapickle</h1>
+          <span>Minecraft Portfolio</span>
+        </div>
+      </a>
+      <div class="nav-actions">
+        <button class="btn-pill" onclick="copyDiscord()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+          <span id="discord-btn-text">abekdagod</span>
+        </button>
+        <a href="#experience" class="btn-pill btn-primary">
+          <span>Past Servers</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+        </a>
+      </div>
+    </header>
+
+    <!-- Hero Card -->
+    <section class="glass-card hero-section">
+      <div class="hero-badge">
+        <div class="pulse-dot"></div>
+        <span>Available for Management, Dev & Custom Web Development</span>
+      </div>
+
+      <h2 class="hero-title">Hey, I'm <span>abekdapickle</span>.</h2>
+      <p class="hero-subtitle">
+        I manage, configure, and build Minecraft servers, and create custom web stores & pages with APIs. 
+        I've worked across 30+ servers in gamemodes like KitPvP, BoxPvP, Gens, SMPs, and custom RPGs — doing 
+        everything from LuckPerms setups and economy balancing to custom Tebex stores, API integrations, and staff leadership.
+      </p>
+
+      <div class="info-pills">
+        <div class="pill-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>IGN: <strong>abekdapickle</strong></span>
+        </div>
+        <div class="pill-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>Discord: <strong>abekdagod</strong></span>
+        </div>
+        <div class="pill-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>Timezone: <strong>EST</strong></span>
+        </div>
+        <div class="pill-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span>Hours: <strong>3h weekdays / 6h weekends (~27h/wk)</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Counter Strip -->
+    <div class="stats-grid">
+      <div class="glass-card stat-card">
+        <div class="stat-number">30</div>
+        <div class="stat-label">Servers Worked On</div>
+      </div>
+      <div class="glass-card stat-card">
+        <div class="stat-number">6</div>
+        <div class="stat-label">Owner / Co-Owner</div>
+      </div>
+      <div class="glass-card stat-card">
+        <div class="stat-number">11</div>
+        <div class="stat-label">Manager / Sr. Admin</div>
+      </div>
+      <div class="glass-card stat-card">
+        <div class="stat-number">5</div>
+        <div class="stat-label">Config & Dev</div>
+      </div>
+      <div class="glass-card stat-card">
+        <div class="stat-number">8</div>
+        <div class="stat-label">Building & Staff</div>
+      </div>
+    </div>
+
+    <!-- What I Do -->
+    <div class="section-header">
+      <div>
+        <h3 class="section-title">What I Do</h3>
+        <p class="section-desc">The areas I spend the most time working on for server owners.</p>
+      </div>
+    </div>
+
+    <div class="competencies-grid">
+      <!-- Card 1 -->
+      <div class="glass-card comp-card">
+        <div>
+          <h4 class="comp-title">Server Management & Staff</h4>
+          <ul class="comp-list">
+            <li>Hiring, screening, and onboarding staff teams (Helpers, Mods, Admins).</li>
+            <li>Keeping staff active, running meetings, and tracking activity logs.</li>
+            <li>Handling support tickets, player ban appeals, and grief investigations.</li>
+            <li>Configuring store packages, command triggers, and balanced rank perks.</li>
+            <li>Running server events, seasonal resets, and release-day testing.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="glass-card comp-card">
+        <div>
+          <h4 class="comp-title">Configuration & Backend</h4>
+          <ul class="comp-list">
+            <li>Setting up Paper, Purpur, Velocity, and BungeeCord servers.</li>
+            <li>Building clean LuckPerms rank hierarchies and permissions.</li>
+            <li>Configuring LiteBans, CoreProtect rollbacks, and DiscordSRV bots.</li>
+            <li>Tuning anti-cheats (GrimAC, Vulcan) to catch cheaters without false flags.</li>
+            <li>Custom GUI menus with DeluxeMenus, TAB scoreboards, and Skript logic.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="glass-card comp-card">
+        <div>
+          <h4 class="comp-title">Custom Web Dev & Tebex</h4>
+          <ul class="comp-list">
+            <li>Custom-themed Tebex and CraftingStore webstores matching your brand.</li>
+            <li>Standalone landing pages, info portals, and community web hubs.</li>
+            <li>Live API integrations: player counts, server online status, and voting stats.</li>
+            <li>Custom widgets, announcements, Discord webhooks, and custom additions.</li>
+            <li>Clean, responsive mobile-friendly layouts built for high conversion.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="glass-card comp-card">
+        <div>
+          <h4 class="comp-title">Building & World Design</h4>
+          <ul class="comp-list">
+            <li>Building custom spawns, PvP arenas, and KoTH capture zones.</li>
+            <li>Designing BoxPvP mine layouts, progression rooms, and warps.</li>
+            <li>Proficient with FAWE, Axiom, WorldEdit, and VoxelSniper.</li>
+            <li>Optimizing worlds with Chunky pre-generation and fixing schematic bugs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experience Portfolio Section -->
+    <div class="section-header" id="experience">
+      <div>
+        <h3 class="section-title">Past Experience</h3>
+        <p class="section-desc">All 30 servers I've held positions on, sorted by role.</p>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterProjects('all')">All (30)</button>
+      <button class="filter-btn" onclick="filterProjects('owner')">Owner / Co-Owner (6)</button>
+      <button class="filter-btn" onclick="filterProjects('manager')">Manager / Admin (11)</button>
+      <button class="filter-btn" onclick="filterProjects('dev')">Developer (5)</button>
+      <button class="filter-btn" onclick="filterProjects('builder')">Builder (4)</button>
+      <button class="filter-btn" onclick="filterProjects('hybrid')">Staff & Hybrid (4)</button>
+
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="projectSearch" placeholder="Search servers or roles..." oninput="searchProjects()">
+      </div>
+    </div>
+
+    <!-- Experience Cards Container -->
+    <div class="experience-grid" id="projectGrid">
+      <!-- Populated via JavaScript -->
+    </div>
+
+    <!-- How I Work -->
+    <div class="glass-card ethic-card">
+      <h3 class="section-title">How I Work</h3>
+      <p class="section-desc">A few things you can expect when working with me.</p>
+      <div class="ethic-grid">
+        <div class="ethic-item">
+          <h4>Active on Discord</h4>
+          <p>I check Discord throughout the day, answer tickets promptly, and keep the team updated on whatever I'm working on.</p>
+        </div>
+        <div class="ethic-item">
+          <h4>Clean Code & Configs</h4>
+          <p>Everything is indented properly, commented when necessary, and easy for other staff or owners to understand.</p>
+        </div>
+        <div class="ethic-item">
+          <h4>Upfront Communication</h4>
+          <p>If something breaks or a task is going to take longer than expected, I let you know directly instead of disappearing.</p>
+        </div>
+        <div class="ethic-item">
+          <h4>Calm During Issues</h4>
+          <p>Used to dealing with release-day hiccups, player drama, and bot attacks without panicking or making impulsive changes.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-left">
+        <div><strong>abekdapickle</strong> — Minecraft Staff, Config & Web Dev Portfolio</div>
+        <div>Based in EST | Discord: <span class="footer-highlight">abekdagod</span></div>
+      </div>
+      <div>
+        <button class="btn-pill btn-primary" onclick="copyDiscord()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+          Copy Discord
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <span>Copied Discord tag: <strong>abekdagod</strong></span>
+  </div>
+
+  <script>
+    const projects = [
+      // Owner / Co-Owner (6)
+      { name: "ZapKits", role: "Owner", category: "owner", desc: "KitPvP server — made the kits, balanced combat and shop prices, and ran release.", tag: "KitPvP" },
+      { name: "GenLists", role: "Owner", category: "owner", desc: "Server listing community — managed the site, staff team, and community outreach.", tag: "Platform" },
+      { name: "Galaxy Network", role: "Owner", category: "owner", desc: "Network — set up BungeeCord proxy routing, Tebex store, and global staff roster.", tag: "Network" },
+      { name: "SparkSMP", role: "Owner", category: "owner", desc: "SMP — set up land claims, player shops, DiscordSRV sync, and community events.", tag: "SMP" },
+      { name: "PickleNation", role: "Co-Owner", category: "owner", desc: "Helped run day-to-day operations, handled community feedback, and balanced gameplay.", tag: "Community" },
+      { name: "ScuffleMCTwo", role: "Co-Owner", category: "owner", desc: "Handled server configs, staff team, and PvP balance testing before launch.", tag: "PvP" },
+
+      // Manager & Sr. Admin (11)
+      { name: "MagicStudios", role: "Manager", category: "manager", desc: "Managed project tasks, build/config deadlines, and staff team coordination.", tag: "Studio" },
+      { name: "Gendojo", role: "Manager", category: "manager", desc: "Gens server — balanced generator prices/drops, managed staff, and set up store items.", tag: "Gens" },
+      { name: "Forgegenx", role: "Manager", category: "manager", desc: "Gens server — handled rule enforcement, bug reports, and seasonal resets.", tag: "Gens" },
+      { name: "CafeNetwork", role: "Manager", category: "manager", desc: "Ran staff meetings, monitored chat moderation, and handled player ban appeals.", tag: "Network" },
+      { name: "MeowMines", role: "Manager", category: "manager", desc: "Prison/Mines — managed staff team, checked rankup progression, and handled bugs.", tag: "Prison" },
+      { name: "Lightlift", role: "Manager", category: "manager", desc: "Handled support tickets, player disputes, and Discord server activity.", tag: "Support" },
+      { name: "Huggymine.pl", role: "Manager", category: "manager", desc: "Handled player tickets, international staff, and player support.", tag: "Network" },
+      { name: "TheClicking", role: "Manager", category: "manager", desc: "Interviewed and onboarded new staff, and kept track of player feedback.", tag: "Management" },
+      { name: "Bath Realms", role: "Manager", category: "manager", desc: "General server oversight, in-game modding, and helping players.", tag: "Realms" },
+      { name: "IronClave", role: "Sr. Admin", category: "manager", desc: "Handled grief rollbacks with CoreProtect, ban appeals, and ticket escalations.", tag: "Admin" },
+      { name: "DaCoolestBox", role: "Sr. Admin", category: "manager", desc: "BoxPvP — handled staff moderation, anti-cheat flag reviews, and hacker reports.", tag: "BoxPvP" },
+
+      // Developer (5)
+      { name: "Rngxrpg", role: "Developer", category: "dev", desc: "Configured custom RPG mob drops, gear stats, and progression mechanics.", tag: "RPG" },
+      { name: "Tetron", role: "Developer", category: "dev", desc: "Set up DeluxeMenus GUIs, custom scoreboards, and core plugin hooks.", tag: "Systems" },
+      { name: "BoxValor", role: "Developer", category: "dev", desc: "BoxPvP — set up mine resets, custom item progression, and PvP combat balance.", tag: "BoxPvP" },
+      { name: "LastCities RP", role: "Developer", category: "dev", desc: "Roleplay server — configured economy, custom vehicles, shops, and land claims.", tag: "City RP" },
+      { name: "Windinautica", role: "Developer", category: "dev", desc: "Themed RPG — made custom mob spawners, environment hazards, and crates.", tag: "Custom RPG" },
+
+      // Builder (4)
+      { name: "SkyTradee", role: "Builder", category: "builder", desc: "Built Skyblock spawn islands, trading hub, and crate area using FAWE.", tag: "Skyblock" },
+      { name: "GrimaceBox", role: "Builder", category: "builder", desc: "Built tiered BoxPvP mines, central PvP arena, and parkour courses.", tag: "BoxPvP" },
+      { name: "Fewer", role: "Builder", category: "builder", desc: "Built server spawn, paths, and NPC shop stalls.", tag: "Spawns" },
+      { name: "SolarForge", role: "Builder", category: "builder", desc: "Built fantasy hub, mine sectors, and event arenas using Axiom and FAWE.", tag: "Fantasy" },
+
+      // Staff & Hybrid (4)
+      { name: "Veilcore", role: "Mod / Builder / Dev", category: "hybrid", desc: "Helped out wherever needed — built warps, fixed config bugs, and moderated chat.", tag: "Hybrid" },
+      { name: "MeowBoxx", role: "Builder / Mod", category: "hybrid", desc: "Built progression mines, moderated in-game chat, and muted/banned rulebreakers.", tag: "Hybrid" },
+      { name: "AuroraVanilla", role: "Moderator", category: "hybrid", desc: "Kept chat friendly, rolled back griefs with CoreProtect, and helped new players.", tag: "Moderation" },
+      { name: "SMP Extra", role: "Builder / Helper", category: "hybrid", desc: "Helped new players get started, answered questions, and built spawn areas.", tag: "Support" }
+    ];
+
+    function getBadgeClass(role) {
+      if (role === 'Owner') return 'badge-owner';
+      if (role === 'Co-Owner') return 'badge-coowner';
+      if (role === 'Manager') return 'badge-manager';
+      if (role === 'Sr. Admin') return 'badge-sradmin';
+      if (role === 'Developer') return 'badge-dev';
+      if (role === 'Builder') return 'badge-builder';
+      return 'badge-staff';
+    }
+
+    function renderProjects(items) {
+      const grid = document.getElementById('projectGrid');
+      grid.innerHTML = '';
+
+      if (items.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem; color: var(--text-muted);">No servers found matching that query.</div>`;
+        return;
+      }
+
+      items.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'glass-card server-card';
+        card.innerHTML = `
+          <div>
+            <div class="server-top">
+              <h4 class="server-name">${p.name}</h4>
+              <span class="role-badge ${getBadgeClass(p.role)}">${p.role}</span>
+            </div>
+            <p class="server-desc">${p.desc}</p>
+          </div>
+          <div class="server-meta">
+            <span class="category-tag">#${p.tag}</span>
+            <span>Credited Role</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      attachLiquidEffect();
+    }
+
+    let currentCategory = 'all';
+    function filterProjects(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      searchProjects();
+    }
+
+    function searchProjects() {
+      const q = document.getElementById('projectSearch').value.toLowerCase().trim();
+      const filtered = projects.filter(p => {
+        const matchesCat = (currentCategory === 'all') || (p.category === currentCategory);
+        const matchesQuery = !q || p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.tag.toLowerCase().includes(q);
+        return matchesCat && matchesQuery;
+      });
+      renderProjects(filtered);
+    }
+
+    renderProjects(projects);
+
+    function copyDiscord() {
+      const discord = "abekdagod";
+      navigator.clipboard.writeText(discord).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        const btnText = document.getElementById('discord-btn-text');
+        if (btnText) btnText.innerText = "Copied!";
+        setTimeout(() => {
+          toast.classList.remove('show');
+          if (btnText) btnText.innerText = "abekdagod";
+        }, 2200);
+      });
+    }
+
+    function attachLiquidEffect() {
+      const cards = document.querySelectorAll('.glass-card');
+      cards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          card.style.setProperty('--mouse-x', `${x}px`);
+          card.style.setProperty('--mouse-y', `${y}px`);
+
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotateX = ((y - centerY) / centerY) * -3.5;
+          const rotateY = ((x - centerX) / centerX) * 3.5;
+          card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)';
+        });
+      });
+    }
+
+    // Sky Canvas
+    const canvas = document.getElementById('night-sky-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const starCount = 175;
+    const stars = [];
+    for (let i = 0; i < starCount; i++) {
+      stars.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        size: Math.random() * 1.8 + 0.4,
+        alpha: Math.random() * 0.8 + 0.2,
+        twinkleSpeed: Math.random() * 0.02 + 0.005,
+        twinkleDir: Math.random() > 0.5 ? 1 : -1
+      });
+    }
+
+    const shootingStars = [];
+    function spawnShootingStar() {
+      if (shootingStars.length < 2 && Math.random() < 0.025) {
+        shootingStars.push({
+          x: Math.random() * width,
+          y: Math.random() * (height * 0.45),
+          length: Math.random() * 70 + 40,
+          speed: Math.random() * 9 + 10,
+          angle: Math.PI / 4 + (Math.random() * 0.2 - 0.1),
+          alpha: 1
+        });
+      }
+    }
+
+    class AuroraWave {
+      constructor(baseY, colorStops, speed, waveHeight, frequency) {
+        this.baseY = baseY;
+        this.colorStops = colorStops;
+        this.speed = speed;
+        this.waveHeight = waveHeight;
+        this.frequency = frequency;
+        this.offset = Math.random() * 100;
+      }
+
+      draw(time) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+
+        const step = 20;
+        ctx.beginPath();
+        ctx.moveTo(0, height);
+
+        for (let x = 0; x <= width + step; x += step) {
+          const wave1 = Math.sin(x * this.frequency + time * this.speed + this.offset) * this.waveHeight;
+          const wave2 = Math.cos(x * (this.frequency * 0.6) - time * (this.speed * 0.8)) * (this.waveHeight * 0.5);
+          const y = this.baseY + wave1 + wave2;
+          ctx.lineTo(x, y);
+        }
+
+        ctx.lineTo(width, height);
+        ctx.closePath();
+
+        const grad = ctx.createLinearGradient(0, this.baseY - this.waveHeight * 2, width, this.baseY + this.waveHeight * 3);
+        this.colorStops.forEach(stop => {
+          grad.addColorStop(stop.pos, stop.color);
+        });
+
+        ctx.fillStyle = grad;
+        ctx.filter = 'blur(45px)';
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    const auroras = [
+      new AuroraWave(height * 0.25, [
+        { pos: 0.0, color: 'rgba(0, 245, 212, 0.0)' },
+        { pos: 0.35, color: 'rgba(16, 185, 129, 0.26)' },
+        { pos: 0.7, color: 'rgba(6, 182, 212, 0.20)' },
+        { pos: 1.0, color: 'rgba(99, 102, 241, 0.0)' }
+      ], 0.0006, 85, 0.0018),
+
+      new AuroraWave(height * 0.32, [
+        { pos: 0.0, color: 'rgba(56, 189, 248, 0.0)' },
+        { pos: 0.4, color: 'rgba(16, 185, 129, 0.32)' },
+        { pos: 0.8, color: 'rgba(236, 72, 153, 0.16)' },
+        { pos: 1.0, color: 'rgba(4, 7, 17, 0.0)' }
+      ], 0.0009, 100, 0.0014),
+
+      new AuroraWave(height * 0.18, [
+        { pos: 0.0, color: 'rgba(139, 92, 246, 0.0)' },
+        { pos: 0.5, color: 'rgba(16, 185, 129, 0.20)' },
+        { pos: 0.85, color: 'rgba(6, 182, 212, 0.25)' },
+        { pos: 1.0, color: 'rgba(139, 92, 246, 0.0)' }
+      ], 0.0005, 75, 0.0022),
+
+      new AuroraWave(height * 0.40, [
+        { pos: 0.0, color: 'rgba(6, 182, 212, 0.0)' },
+        { pos: 0.3, color: 'rgba(168, 85, 247, 0.20)' },
+        { pos: 0.7, color: 'rgba(16, 185, 129, 0.22)' },
+        { pos: 1.0, color: 'rgba(0, 0, 0, 0.0)' }
+      ], 0.0007, 95, 0.0016)
+    ];
+
+    let animTime = 0;
+    function renderSky() {
+      ctx.clearRect(0, 0, width, height);
+
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
+      skyGrad.addColorStop(0, '#030712');
+      skyGrad.addColorStop(0.5, '#040b1e');
+      skyGrad.addColorStop(1, '#02050e');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      animTime += 1;
+      auroras.forEach(aurora => aurora.draw(animTime));
+
+      ctx.save();
+      stars.forEach(star => {
+        star.alpha += star.twinkleSpeed * star.twinkleDir;
+        if (star.alpha > 0.9) {
+          star.alpha = 0.9;
+          star.twinkleDir = -1;
+        } else if (star.alpha < 0.2) {
+          star.alpha = 0.2;
+          star.twinkleDir = 1;
+        }
+
+        ctx.fillStyle = `rgba(240, 249, 255, ${star.alpha})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (star.size > 1.35) {
+          ctx.fillStyle = `rgba(167, 243, 208, ${star.alpha * 0.25})`;
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, star.size * 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+      ctx.restore();
+
+      spawnShootingStar();
+      for (let i = shootingStars.length - 1; i >= 0; i--) {
+        const s = shootingStars[i];
+        ctx.save();
+        ctx.strokeStyle = `rgba(255, 255, 255, ${s.alpha})`;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x - Math.cos(s.angle) * s.length, s.y - Math.sin(s.angle) * s.length);
+        ctx.stroke();
+        ctx.restore();
+
+        s.x += Math.cos(s.angle) * s.speed;
+        s.y += Math.sin(s.angle) * s.speed;
+        s.alpha -= 0.022;
+
+        if (s.alpha <= 0 || s.x > width || s.y > height) {
+          shootingStars.splice(i, 1);
+        }
+      }
+
+      requestAnimationFrame(renderSky);
+    }
+
+    renderSky();
+  </script>
+</body>
+</html>
